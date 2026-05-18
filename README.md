@@ -81,6 +81,9 @@ type: custom:apexcharts-card
 header:
   show: true
   title: PV Export Revenue By Month
+graph_span: 1year
+span:
+  start: year
 apex_config:
   chart:
     type: bar

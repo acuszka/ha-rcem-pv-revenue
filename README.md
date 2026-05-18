@@ -81,7 +81,9 @@ type: custom:apexcharts-card
 header:
   show: true
   title: PV Export Revenue By Month
-graph_span: 4month
+graph_span: 1year
+span:
+  start: year
 apex_config:
   chart:
     type: bar
@@ -92,6 +94,20 @@ apex_config:
     bar:
       borderRadius: 4
       columnWidth: 48%
+  fill:
+    type: gradient
+    gradient:
+      shade: light
+      type: vertical
+      shadeIntensity: 0.25
+      gradientToColors:
+        - '#f59e0b'
+      inverseColors: false
+      opacityFrom: 0.95
+      opacityTo: 0.65
+      stops:
+        - 0
+        - 100
   dataLabels:
     enabled: true
     formatter: |
@@ -112,6 +128,8 @@ apex_config:
       datetimeFormatter:
         month: MMM
   yaxis:
+    title:
+      text: PLN
     min: 0
     decimalsInFloat: 0
 series:
@@ -119,7 +137,7 @@ series:
     name: Revenue
     unit: PLN
     type: column
-    color: '#2e7d32'
+    color: '#facc15'
     data_generator: |
       const breakdown = entity.attributes.monthly_breakdown || [];
       return breakdown

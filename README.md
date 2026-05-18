@@ -2,8 +2,6 @@
 
 Home Assistant custom integration for estimating Polish prosumer PV export revenue from PSE monthly RCEm prices.
 
-This is a standalone project. It is not related to any other project in this workspace.
-
 ## What It Does
 
 - Fetches monthly RCEm prices from PSE:

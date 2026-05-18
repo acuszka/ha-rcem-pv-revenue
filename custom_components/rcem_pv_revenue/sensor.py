@@ -12,13 +12,14 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CURRENCY_PLN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, UPLIFT_MULTIPLIER
 from .coordinator import RCEmRevenueCoordinator
+
+CURRENCY_PLN = "PLN"
 
 
 async def async_setup_entry(
@@ -182,4 +183,3 @@ class PVLifetimeRevenueSensor(RCEmSensorBase):
             "missing_months": self.coordinator.data.missing_months,
             "uplift_enabled": self.coordinator.include_23_percent_uplift,
         }
-

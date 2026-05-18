@@ -52,6 +52,9 @@ The integration reads monthly recorder statistics from that sensor. If statistic
 - `sensor.rcem_latest_published_price`: latest raw official RCEm published by PSE, in `PLN/kWh`.
 - `sensor.rcem_settlement_price`: latest RCEm after the optional 23% uplift, in `PLN/kWh`.
 - `sensor.pv_export_revenue_current_month`: estimated revenue for the current month.
+- `sensor.pv_export_revenue_previous_month`: estimated revenue for the previous month.
 - `sensor.pv_export_revenue_lifetime`: estimated revenue from the configured start month.
 
 RCEm for a month is usually published after that month ends. Until PSE publishes the month, current-month price and revenue may be unavailable.
+
+The lifetime sensor exposes diagnostic attributes including `total_exported_kwh` and `monthly_breakdown`. Use those to verify that the selected entity or statistic ID represents exported-to-grid energy, not total PV generation.

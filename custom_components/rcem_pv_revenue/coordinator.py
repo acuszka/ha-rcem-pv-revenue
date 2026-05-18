@@ -55,6 +55,12 @@ class RCEmRevenueData:
         return dt_util.now().strftime("%Y-%m")
 
     @property
+    def previous_month(self) -> str:
+        first_day_this_month = dt_util.now().replace(day=1)
+        previous = first_day_this_month - timedelta(days=1)
+        return previous.strftime("%Y-%m")
+
+    @property
     def current_month_price(self) -> RCEmPrice | None:
         return self.prices.get(self.current_month)
 
@@ -67,6 +73,19 @@ class RCEmRevenueData:
     @property
     def current_month_revenue(self) -> MonthRevenue | None:
         return self.monthly_revenue.get(self.current_month)
+
+    @property
+    def previous_month_revenue(self) -> MonthRevenue | None:
+        return self.monthly_revenue.get(self.previous_month)
+
+    @property
+    def lifetime_exported_kwh(self) -> Decimal | None:
+        if not self.monthly_revenue:
+            return None
+        return sum(
+            (item.exported_kwh for item in self.monthly_revenue.values()),
+            Decimal("0"),
+        )
 
     @property
     def lifetime_revenue_pln(self) -> Decimal | None:

@@ -35,6 +35,7 @@ async def async_setup_entry(
             RCEmLatestPublishedPriceSensor(coordinator, entry),
             RCEmSettlementPriceSensor(coordinator, entry),
             PVCurrentMonthRevenueSensor(coordinator, entry),
+            PVPreviousMonthRevenueSensor(coordinator, entry),
             PVLifetimeRevenueSensor(coordinator, entry),
         ]
     )
@@ -179,6 +180,46 @@ class PVCurrentMonthRevenueSensor(RCEmSensorBase):
         }
 
 
+class PVPreviousMonthRevenueSensor(RCEmSensorBase):
+    """Previous month PV export revenue."""
+
+    _attr_device_class = SensorDeviceClass.MONETARY
+    _attr_native_unit_of_measurement = CURRENCY_PLN
+    _attr_state_class = SensorStateClass.TOTAL
+
+    def __init__(self, coordinator: RCEmRevenueCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(
+            coordinator,
+            entry,
+            "export_revenue_previous_month",
+            "Export revenue previous month",
+        )
+
+    @property
+    def native_value(self) -> Decimal | None:
+        revenue = self.coordinator.data.previous_month_revenue
+        if revenue is None:
+            return None
+        return revenue.revenue_pln
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        revenue = self.coordinator.data.previous_month_revenue
+        if revenue is None:
+            previous_month = self.coordinator.data.previous_month
+            return {
+                "month": previous_month,
+                "export_statistic_id": self.coordinator.export_statistic_id,
+                "price_available": previous_month in self.coordinator.data.prices,
+                "export_statistics_available": previous_month
+                not in self.coordinator.data.missing_months,
+            }
+        return _month_revenue_attributes(
+            revenue,
+            self.coordinator.include_23_percent_uplift,
+        )
+
+
 class PVLifetimeRevenueSensor(RCEmSensorBase):
     """Lifetime PV export revenue from configured start month."""
 
@@ -203,6 +244,27 @@ class PVLifetimeRevenueSensor(RCEmSensorBase):
         return {
             "months_calculated": len(self.coordinator.data.monthly_revenue),
             "export_statistic_id": self.coordinator.export_statistic_id,
+            "total_exported_kwh": float(self.coordinator.data.lifetime_exported_kwh)
+            if self.coordinator.data.lifetime_exported_kwh is not None
+            else None,
+            "monthly_breakdown": [
+                _month_revenue_attributes(
+                    revenue,
+                    self.coordinator.include_23_percent_uplift,
+                )
+                for revenue in self.coordinator.data.monthly_revenue.values()
+            ],
             "missing_months": self.coordinator.data.missing_months,
             "uplift_enabled": self.coordinator.include_23_percent_uplift,
         }
+
+
+def _month_revenue_attributes(revenue: Any, uplift_enabled: bool) -> dict[str, Any]:
+    return {
+        "month": revenue.month,
+        "exported_kwh": float(revenue.exported_kwh),
+        "price_pln_mwh": float(revenue.price.price_pln_mwh),
+        "revenue_pln": float(revenue.revenue_pln),
+        "corrected": revenue.price.corrected,
+        "uplift_enabled": uplift_enabled,
+    }

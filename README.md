@@ -2,69 +2,60 @@
 
 Home Assistant custom integration for estimating Polish prosumer PV export revenue from PSE monthly RCEm prices.
 
-## What It Does
+## Features
 
-- Fetches monthly RCEm prices from PSE:
-  `https://www.pse.pl/oire/rcem-rynkowa-miesieczna-cena-energii-elektrycznej`
-- Uses the latest corrected RCEm value when PSE publishes one.
-- Reads monthly deltas from a cumulative exported energy sensor in Home Assistant.
-- Calculates revenue as:
-  `exported_kWh * RCEm_PLN_per_MWh / 1000`
-- Optionally applies the Polish 23% uplift:
-  `exported_kWh * RCEm_PLN_per_MWh * 1.23 / 1000`
+- Fetches monthly RCEm prices from PSE.
+- Uses corrected RCEm values when PSE publishes them.
+- Calculates export revenue from Home Assistant energy statistics.
+- Optional 23% uplift for Polish prosumer settlement.
+- Sensors for current month, previous month, current year, and configured lifetime revenue.
+
+Revenue formula:
+
+```text
+exported_kWh * RCEm_PLN_per_MWh * multiplier / 1000
+```
+
+where `multiplier` is `1.23` when the uplift option is enabled.
 
 ## Installation
 
-### HACS Custom Repository
-
-1. Copy or publish this repository to GitHub.
-2. In HACS, add it as a custom repository of type `Integration`.
-3. Install `RCEm PV Revenue`.
-4. Restart Home Assistant.
-5. Add the integration from Settings -> Devices & services.
-
-### Manual
-
-Copy `custom_components/rcem_pv_revenue` into your Home Assistant `custom_components` directory and restart Home Assistant.
-
-## Required Input Sensor
-
-Choose a cumulative exported-to-grid energy sensor in `kWh`, or enter the recorder statistic ID used by the Energy dashboard. Some integrations expose Energy dashboard sources only as statistic IDs, not as entities in Developer Tools -> States.
-
-For example, if Energy dashboard uses:
+In HACS, add this repository as a custom repository of type **Integration**:
 
 ```text
-tauron_importer:**************_balanced_generation
+https://github.com/acuszka/ha-rcem-pv-revenue
 ```
 
-enter your full value as **Exported energy statistic ID**. For Tauron users this value may come from the HACS integration **Tauron AMIplus**. Use the monthly balanced generation statistic from Tauron AMIplus, for example `tauron_importer:<your_customer_id>_balanced_generation`.
+Install **RCEm PV Revenue**, restart Home Assistant, then add the integration from **Settings -> Devices & services**.
 
-If you choose an entity, it should have long-term statistics enabled, normally:
+## Input Statistic
 
-- `device_class: energy`
-- `state_class: total_increasing` or `total`
-- `unit_of_measurement: kWh`
+Select an exported-to-grid energy sensor in `kWh`, or enter a recorder statistic ID used by the Energy dashboard.
 
-The integration reads monthly recorder statistics from that sensor. If statistics are missing for a month, that month is skipped and listed in the revenue sensor attributes.
+For Tauron AMIplus users, the useful Energy dashboard statistic may look like:
 
-## Entities
+```text
+tauron_importer:<your_customer_id>_balanced_generation
+```
 
-- `sensor.rcem_pv_revenue_latest_published_price`: latest raw official RCEm published by PSE, in `PLN/kWh`.
-- `sensor.rcem_pv_revenue_settlement_price`: latest RCEm after the optional 23% uplift, in `PLN/kWh`.
-- `sensor.rcem_pv_revenue_export_revenue_current_month`: estimated revenue for the current month.
-- `sensor.rcem_pv_revenue_export_revenue_previous_month`: estimated revenue for the previous month.
-- `sensor.rcem_pv_revenue_export_revenue_current_year`: estimated revenue for the current year.
-- `sensor.rcem_pv_revenue_export_revenue_since_yyyy_mm`: estimated revenue from the configured start month.
+Use your real value in **Exported energy statistic ID**. Do not publish your customer ID.
 
-RCEm for a month is usually published after that month ends. Until PSE publishes the month, current-month price and revenue may be unavailable.
+## Main Entities
 
-The lifetime and current-year sensors expose diagnostic attributes including `total_exported_kwh` and `monthly_breakdown`. Use those to verify that the selected entity or statistic ID represents exported-to-grid energy, not total PV generation.
+- `sensor.rcem_pv_revenue_latest_published_price`
+- `sensor.rcem_pv_revenue_settlement_price`
+- `sensor.rcem_pv_revenue_export_revenue_current_month`
+- `sensor.rcem_pv_revenue_export_revenue_previous_month`
+- `sensor.rcem_pv_revenue_export_revenue_current_year`
+- `sensor.rcem_pv_revenue_export_revenue_since_yyyy_mm`
 
-## Showing Monthly Revenue On A Dashboard
+Current-month revenue can be unavailable until PSE publishes RCEm for that month.
 
-The integration exposes month-by-month data through the `monthly_breakdown` attribute on the lifetime and current-year revenue sensors. This avoids creating a growing number of separate monthly entities.
+## Monthly Dashboard
 
-A simple built-in option is a Markdown card:
+The current-year and lifetime revenue sensors expose `monthly_breakdown`.
+
+Markdown card:
 
 ```jinja
 | Month | Export | Revenue |
@@ -74,7 +65,7 @@ A simple built-in option is a Markdown card:
 {% endfor %}
 ```
 
-For charts, install [ApexCharts Card](https://github.com/RomRider/apexcharts-card) and add a manual card like this:
+ApexCharts Card:
 
 ```yaml
 type: custom:apexcharts-card
@@ -97,41 +88,17 @@ apex_config:
   fill:
     type: gradient
     gradient:
-      shade: light
       type: vertical
-      shadeIntensity: 0.25
       gradientToColors:
         - '#f59e0b'
-      inverseColors: false
       opacityFrom: 0.95
       opacityTo: 0.65
-      stops:
-        - 0
-        - 100
-  dataLabels:
-    enabled: true
-    formatter: |
-      EVAL:function(value) {
-        return value.toFixed(0) + ' PLN';
-      }
-    style:
-      fontSize: 11px
-  tooltip:
-    y:
-      formatter: |
-        EVAL:function(value) {
-          return value.toFixed(2) + ' PLN';
-        }
   xaxis:
     type: datetime
-    labels:
-      datetimeFormatter:
-        month: MMM
   yaxis:
     title:
       text: PLN
     min: 0
-    decimalsInFloat: 0
 series:
   - entity: sensor.rcem_pv_revenue_export_revenue_current_year
     name: Revenue

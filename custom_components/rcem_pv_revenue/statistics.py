@@ -26,6 +26,8 @@ def monthly_export_from_statistics(rows: list[dict[str, Any]]) -> dict[str, Deci
 
         state = decimal_or_none(row.get("state"))
         if state is None:
+            state = decimal_or_none(row.get("sum"))
+        if state is None:
             continue
         if previous_state is not None:
             result[month] = max(state - previous_state, Decimal("0"))
@@ -63,4 +65,3 @@ def decimal_or_none(value: Any) -> Decimal | None:
         return Decimal(str(value))
     except (InvalidOperation, ValueError):
         return None
-

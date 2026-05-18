@@ -25,3 +25,14 @@ def test_monthly_export_falls_back_to_state_delta() -> None:
     assert monthly_export_from_statistics(rows) == {
         "2024-02": Decimal("35.25"),
     }
+
+
+def test_monthly_export_falls_back_to_sum_delta() -> None:
+    rows = [
+        {"start": datetime(2024, 1, 1, tzinfo=timezone.utc), "sum": 100},
+        {"start": datetime(2024, 2, 1, tzinfo=timezone.utc), "sum": 135.25},
+    ]
+
+    assert monthly_export_from_statistics(rows) == {
+        "2024-02": Decimal("35.25"),
+    }

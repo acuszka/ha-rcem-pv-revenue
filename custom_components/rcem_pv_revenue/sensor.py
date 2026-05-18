@@ -32,7 +32,7 @@ async def async_setup_entry(
     coordinator: RCEmRevenueCoordinator = entry.runtime_data
     async_add_entities(
         [
-            RCEmCurrentMonthPriceSensor(coordinator, entry),
+            RCEmLatestPublishedPriceSensor(coordinator, entry),
             RCEmSettlementPriceSensor(coordinator, entry),
             PVCurrentMonthRevenueSensor(coordinator, entry),
             PVLifetimeRevenueSensor(coordinator, entry),
@@ -62,25 +62,30 @@ class RCEmSensorBase(CoordinatorEntity[RCEmRevenueCoordinator], SensorEntity):
         self.entity_description = SensorEntityDescription(key=key, name=name)
 
 
-class RCEmCurrentMonthPriceSensor(RCEmSensorBase):
-    """Raw RCEm price sensor."""
+class RCEmLatestPublishedPriceSensor(RCEmSensorBase):
+    """Latest published raw RCEm price sensor."""
 
     _attr_native_unit_of_measurement = f"{CURRENCY_PLN}/kWh"
     _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(self, coordinator: RCEmRevenueCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, "current_month_price", "Current month price")
+        super().__init__(
+            coordinator,
+            entry,
+            "latest_published_price",
+            "Latest published price",
+        )
 
     @property
     def native_value(self) -> Decimal | None:
-        price = self.coordinator.data.current_month_price
+        price = self.coordinator.data.latest_published_price
         if price is None:
             return None
         return price.price_pln_kwh
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        price = self.coordinator.data.current_month_price
+        price = self.coordinator.data.latest_published_price
         if price is None:
             return {}
         return {
@@ -105,19 +110,25 @@ class RCEmSettlementPriceSensor(RCEmSensorBase):
 
     @property
     def native_value(self) -> Decimal | None:
-        price = self.coordinator.data.current_month_price
+        price = self.coordinator.data.latest_published_price
         if price is None:
             return None
         return self.coordinator.settlement_price_pln_kwh(price)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        return {
+        price = self.coordinator.data.latest_published_price
+        attributes = {
             "uplift_enabled": self.coordinator.include_23_percent_uplift,
             "uplift_multiplier": UPLIFT_MULTIPLIER
             if self.coordinator.include_23_percent_uplift
             else 1,
         }
+        if price is not None:
+            attributes["month"] = price.month
+            attributes["price_pln_mwh"] = float(price.price_pln_mwh)
+            attributes["corrected"] = price.corrected
+        return attributes
 
 
 class PVCurrentMonthRevenueSensor(RCEmSensorBase):
@@ -146,7 +157,17 @@ class PVCurrentMonthRevenueSensor(RCEmSensorBase):
     def extra_state_attributes(self) -> dict[str, Any]:
         revenue = self.coordinator.data.current_month_revenue
         if revenue is None:
-            return {"missing_months": self.coordinator.data.missing_months}
+            current_month = self.coordinator.data.current_month
+            return {
+                "month": current_month,
+                "price_available": current_month in self.coordinator.data.prices,
+                "export_statistics_available": current_month
+                not in self.coordinator.data.missing_months,
+                "latest_published_month": self.coordinator.data.latest_published_price.month
+                if self.coordinator.data.latest_published_price
+                else None,
+                "missing_months": self.coordinator.data.missing_months,
+            }
         return {
             "month": revenue.month,
             "exported_kwh": float(revenue.exported_kwh),

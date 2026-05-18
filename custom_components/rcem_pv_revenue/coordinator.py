@@ -58,6 +58,12 @@ class RCEmRevenueData:
         return self.prices.get(self.current_month)
 
     @property
+    def latest_published_price(self) -> RCEmPrice | None:
+        if not self.prices:
+            return None
+        return self.prices[max(self.prices)]
+
+    @property
     def current_month_revenue(self) -> MonthRevenue | None:
         return self.monthly_revenue.get(self.current_month)
 

@@ -39,10 +39,9 @@ The integration reads monthly recorder statistics from that sensor. If statistic
 
 ## Entities
 
-- `sensor.rcem_current_month_price`: raw official RCEm for the current month, in `PLN/kWh`.
-- `sensor.rcem_settlement_price`: RCEm after the optional 23% uplift, in `PLN/kWh`.
+- `sensor.rcem_latest_published_price`: latest raw official RCEm published by PSE, in `PLN/kWh`.
+- `sensor.rcem_settlement_price`: latest RCEm after the optional 23% uplift, in `PLN/kWh`.
 - `sensor.pv_export_revenue_current_month`: estimated revenue for the current month.
 - `sensor.pv_export_revenue_lifetime`: estimated revenue from the configured start month.
 
 RCEm for a month is usually published after that month ends. Until PSE publishes the month, current-month price and revenue may be unavailable.
-

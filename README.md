@@ -8,6 +8,7 @@ Home Assistant custom integration for estimating Polish prosumer PV export reven
 - Uses corrected RCEm values when PSE publishes them.
 - Calculates export revenue from Home Assistant energy statistics.
 - Optional 23% uplift for Polish prosumer settlement.
+- Home Assistant notification when PSE publishes a new monthly RCEm.
 - Sensors for current month, previous month, current year, and configured lifetime revenue.
 
 Revenue formula:

@@ -13,6 +13,7 @@ from aiohttp import ClientSession
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers import persistent_notification
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -24,6 +25,7 @@ from .const import (
     DEFAULT_INCLUDE_23_PERCENT_UPLIFT,
     DEFAULT_START_MONTH,
     DOMAIN,
+    OPTION_LAST_NOTIFIED_MONTH,
 )
 from .rcem import RCEmPrice, async_fetch_rcem_prices
 from .revenue import calculate_revenue_pln, settlement_price_pln_kwh
@@ -186,16 +188,60 @@ class RCEmRevenueCoordinator(DataUpdateCoordinator[RCEmRevenueData]):
                 ),
             )
 
-        return RCEmRevenueData(
+        data = RCEmRevenueData(
             prices=prices,
             monthly_revenue=monthly_revenue,
             missing_months=missing_months,
         )
+        self._notify_new_monthly_price(data)
+        return data
 
     def settlement_price_pln_kwh(self, price: RCEmPrice) -> Decimal:
         """Return configured settlement price for a raw RCEm price."""
 
         return settlement_price_pln_kwh(price, self.include_23_percent_uplift)
+
+    def _notify_new_monthly_price(self, data: RCEmRevenueData) -> None:
+        """Create an HA notification when PSE publishes a new monthly RCEm."""
+
+        latest_price = data.latest_published_price
+        if latest_price is None:
+            return
+
+        latest_month = latest_price.month
+        last_notified_month = self.entry.options.get(OPTION_LAST_NOTIFIED_MONTH)
+
+        if last_notified_month is None:
+            self.hass.config_entries.async_update_entry(
+                self.entry,
+                options={
+                    **self.entry.options,
+                    OPTION_LAST_NOTIFIED_MONTH: latest_month,
+                },
+            )
+            return
+
+        if latest_month <= last_notified_month:
+            return
+
+        settlement_price = self.settlement_price_pln_kwh(latest_price)
+        persistent_notification.async_create(
+            self.hass,
+            (
+                f"PSE published RCEm for {latest_month}: "
+                f"{latest_price.price_pln_mwh} PLN/MWh "
+                f"({settlement_price} PLN/kWh settlement price)."
+            ),
+            title="New RCEm price published",
+            notification_id=f"{DOMAIN}_new_price_{latest_month}",
+        )
+        self.hass.config_entries.async_update_entry(
+            self.entry,
+            options={
+                **self.entry.options,
+                OPTION_LAST_NOTIFIED_MONTH: latest_month,
+            },
+        )
 
     async def _async_monthly_export_kwh(self) -> dict[str, Decimal]:
         """Read monthly export deltas from HA recorder statistics."""

@@ -85,7 +85,7 @@ apex_config:
   chart:
     type: bar
   xaxis:
-    type: category
+    type: datetime
 series:
   - entity: sensor.rcem_pv_revenue_export_revenue_current_year
     name: Revenue
@@ -94,6 +94,6 @@ series:
     data_generator: |
       const breakdown = entity.attributes.monthly_breakdown || [];
       return breakdown.map((row) => {
-        return [row.month, Number(row.revenue_pln || 0)];
+        return [new Date(`${row.month}-01`).getTime(), Number(row.revenue_pln || 0)];
       });
 ```

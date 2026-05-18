@@ -38,8 +38,6 @@ For Tauron AMIplus users, the useful Energy dashboard statistic may look like:
 tauron_importer:<your_customer_id>_balanced_generation
 ```
 
-Use your real value in **Exported energy statistic ID**. Do not publish your customer ID.
-
 ## Main Entities
 
 - `sensor.rcem_pv_revenue_latest_published_price`

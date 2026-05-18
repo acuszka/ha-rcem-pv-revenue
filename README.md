@@ -81,44 +81,19 @@ type: custom:apexcharts-card
 header:
   show: true
   title: PV Export Revenue By Month
-  show_states: true
-graph_span: 12month
-span:
-  start: year
 apex_config:
   chart:
     type: bar
   xaxis:
     type: category
-  yaxis:
-    decimalsInFloat: 2
 series:
   - entity: sensor.rcem_pv_revenue_export_revenue_current_year
     name: Revenue
     unit: PLN
     type: column
-    yaxis_id: main
     data_generator: |
       const breakdown = entity.attributes.monthly_breakdown || [];
       return breakdown.map((row) => {
         return [row.month, Number(row.revenue_pln || 0)];
       });
-  - entity: sensor.rcem_pv_revenue_export_revenue_current_year
-    name: Export
-    unit: kWh
-    type: line
-    yaxis_id: export
-    data_generator: |
-      const breakdown = entity.attributes.monthly_breakdown || [];
-      return breakdown.map((row) => {
-        return [row.month, Number(row.exported_kwh || 0)];
-      });
-yaxis:
-  - id: main
-    min: 0
-    decimals: 2
-  - id: export
-    opposite: true
-    min: 0
-    decimals: 0
 ```

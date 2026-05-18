@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Przychod PV RCEm",
+        "description": "Szacuj przychod z energii oddanej do sieci na podstawie miesiecznych cen RCEm publikowanych przez PSE.",
+        "data": {
+          "name": "Nazwa",
+          "export_entity_id": "Licznik narastajacy energii oddanej",
+          "start_month": "Miesiac poczatkowy",
+          "include_23_percent_uplift": "Dodaj 23% doplaty rozliczeniowej"
+        }
+      }
+    },
+    "error": {
+      "invalid_month": "Uzyj formatu RRRR-MM, na przyklad 2024-01."
+    },
+    "abort": {
+      "already_configured": "Integracja Przychod PV RCEm jest juz skonfigurowana."
+    }
+  }
+}

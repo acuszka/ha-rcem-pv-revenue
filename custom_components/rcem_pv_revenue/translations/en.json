@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "RCEm PV Revenue",
+        "description": "Track estimated revenue from PV energy exported to the grid using PSE monthly RCEm prices.",
+        "data": {
+          "name": "Name",
+          "export_entity_id": "Cumulative exported energy sensor",
+          "start_month": "Start month",
+          "include_23_percent_uplift": "Add 23% settlement uplift"
+        }
+      }
+    },
+    "error": {
+      "invalid_month": "Use YYYY-MM format, for example 2024-01."
+    },
+    "abort": {
+      "already_configured": "RCEm PV Revenue is already configured."
+    }
+  }
+}

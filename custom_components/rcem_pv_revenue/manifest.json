@@ -1,0 +1,14 @@
+{
+  "domain": "rcem_pv_revenue",
+  "name": "RCEm PV Revenue",
+  "after_dependencies": ["recorder"],
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://github.com/tacka/ha-rcem-pv-revenue",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/tacka/ha-rcem-pv-revenue/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}
+

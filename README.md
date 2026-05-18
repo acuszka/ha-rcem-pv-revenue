@@ -97,6 +97,7 @@ series:
     name: Revenue
     unit: PLN
     type: column
+    yaxis_id: main
     data_generator: |
       const breakdown = entity.attributes.monthly_breakdown || [];
       return breakdown.map((row) => {

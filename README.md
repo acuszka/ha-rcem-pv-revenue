@@ -49,12 +49,12 @@ The integration reads monthly recorder statistics from that sensor. If statistic
 
 ## Entities
 
-- `sensor.rcem_latest_published_price`: latest raw official RCEm published by PSE, in `PLN/kWh`.
-- `sensor.rcem_settlement_price`: latest RCEm after the optional 23% uplift, in `PLN/kWh`.
-- `sensor.pv_export_revenue_current_month`: estimated revenue for the current month.
-- `sensor.pv_export_revenue_previous_month`: estimated revenue for the previous month.
-- `sensor.pv_export_revenue_current_year`: estimated revenue for the current year.
-- `sensor.pv_export_revenue_lifetime`: estimated revenue from the configured start month.
+- `sensor.rcem_pv_revenue_latest_published_price`: latest raw official RCEm published by PSE, in `PLN/kWh`.
+- `sensor.rcem_pv_revenue_settlement_price`: latest RCEm after the optional 23% uplift, in `PLN/kWh`.
+- `sensor.rcem_pv_revenue_export_revenue_current_month`: estimated revenue for the current month.
+- `sensor.rcem_pv_revenue_export_revenue_previous_month`: estimated revenue for the previous month.
+- `sensor.rcem_pv_revenue_export_revenue_current_year`: estimated revenue for the current year.
+- `sensor.rcem_pv_revenue_export_revenue_since_yyyy_mm`: estimated revenue from the configured start month.
 
 RCEm for a month is usually published after that month ends. Until PSE publishes the month, current-month price and revenue may be unavailable.
 
@@ -69,7 +69,7 @@ A simple built-in option is a Markdown card:
 ```jinja
 | Month | Export | Revenue |
 |---|---:|---:|
-{% for row in state_attr('sensor.pv_export_revenue_current_year', 'monthly_breakdown') or [] -%}
+{% for row in state_attr('sensor.rcem_pv_revenue_export_revenue_current_year', 'monthly_breakdown') or [] -%}
 | {{ row.month }} | {{ row.exported_kwh | round(1) }} kWh | {{ row.revenue_pln | round(2) }} PLN |
 {% endfor %}
 ```
@@ -93,7 +93,7 @@ apex_config:
   yaxis:
     decimalsInFloat: 2
 series:
-  - entity: sensor.pv_export_revenue_current_year
+  - entity: sensor.rcem_pv_revenue_export_revenue_current_year
     name: Revenue
     unit: PLN
     type: column
@@ -103,7 +103,7 @@ series:
       return breakdown.map((row) => {
         return [row.month, Number(row.revenue_pln || 0)];
       });
-  - entity: sensor.pv_export_revenue_current_year
+  - entity: sensor.rcem_pv_revenue_export_revenue_current_year
     name: Export
     unit: kWh
     type: line

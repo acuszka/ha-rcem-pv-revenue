@@ -81,22 +81,48 @@ type: custom:apexcharts-card
 header:
   show: true
   title: PV Export Revenue By Month
-graph_span: 1year
-span:
-  start: year
+graph_span: 4month
 apex_config:
   chart:
     type: bar
+    height: 260
+    toolbar:
+      show: false
+  plotOptions:
+    bar:
+      borderRadius: 4
+      columnWidth: 48%
+  dataLabels:
+    enabled: true
+    formatter: |
+      EVAL:function(value) {
+        return value.toFixed(0) + ' PLN';
+      }
+    style:
+      fontSize: 11px
+  tooltip:
+    y:
+      formatter: |
+        EVAL:function(value) {
+          return value.toFixed(2) + ' PLN';
+        }
   xaxis:
     type: datetime
+    labels:
+      datetimeFormatter:
+        month: MMM
+  yaxis:
+    min: 0
+    decimalsInFloat: 0
 series:
   - entity: sensor.rcem_pv_revenue_export_revenue_current_year
     name: Revenue
     unit: PLN
     type: column
+    color: '#2e7d32'
     data_generator: |
       const breakdown = entity.attributes.monthly_breakdown || [];
-      return breakdown.map((row) => {
-        return [new Date(`${row.month}-01`).getTime(), Number(row.revenue_pln || 0)];
-      });
+      return breakdown
+        .filter((row) => Number(row.revenue_pln || 0) > 0)
+        .map((row) => [new Date(`${row.month}-01T12:00:00`).getTime(), Number(row.revenue_pln || 0)]);
 ```

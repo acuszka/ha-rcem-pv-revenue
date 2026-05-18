@@ -34,10 +34,10 @@ Choose a cumulative exported-to-grid energy sensor in `kWh`, or enter the record
 For example, if Energy dashboard uses:
 
 ```text
-tauron_importer:<your_customer_id>_balanced_generation
+tauron_importer:**************_balanced_generation
 ```
 
-enter that value as **Exported energy statistic ID**.
+enter your full value as **Exported energy statistic ID**. For Tauron users this value may come from the HACS integration **Tauron AMIplus**. Use the monthly balanced generation statistic from Tauron AMIplus, for example `tauron_importer:<your_customer_id>_balanced_generation`.
 
 If you choose an entity, it should have long-term statistics enabled, normally:
 
@@ -53,8 +53,25 @@ The integration reads monthly recorder statistics from that sensor. If statistic
 - `sensor.rcem_settlement_price`: latest RCEm after the optional 23% uplift, in `PLN/kWh`.
 - `sensor.pv_export_revenue_current_month`: estimated revenue for the current month.
 - `sensor.pv_export_revenue_previous_month`: estimated revenue for the previous month.
+- `sensor.pv_export_revenue_current_year`: estimated revenue for the current year.
 - `sensor.pv_export_revenue_lifetime`: estimated revenue from the configured start month.
 
 RCEm for a month is usually published after that month ends. Until PSE publishes the month, current-month price and revenue may be unavailable.
 
-The lifetime sensor exposes diagnostic attributes including `total_exported_kwh` and `monthly_breakdown`. Use those to verify that the selected entity or statistic ID represents exported-to-grid energy, not total PV generation.
+The lifetime and current-year sensors expose diagnostic attributes including `total_exported_kwh` and `monthly_breakdown`. Use those to verify that the selected entity or statistic ID represents exported-to-grid energy, not total PV generation.
+
+## Showing Monthly Revenue On A Dashboard
+
+The integration exposes month-by-month data through the `monthly_breakdown` attribute on the lifetime and current-year revenue sensors. This avoids creating a growing number of separate monthly entities.
+
+A simple built-in option is a Markdown card:
+
+```jinja
+| Month | Export | Revenue |
+|---|---:|---:|
+{% for row in state_attr('sensor.pv_export_revenue_current_year', 'monthly_breakdown') or [] -%}
+| {{ row.month }} | {{ row.exported_kwh | round(1) }} kWh | {{ row.revenue_pln | round(2) }} PLN |
+{% endfor %}
+```
+
+For charts, use a dashboard card that can read attributes, such as ApexCharts Card, and point it at the same `monthly_breakdown` attribute.

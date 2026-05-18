@@ -17,6 +17,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, UPLIFT_MULTIPLIER
+from .const import CONF_START_MONTH, DEFAULT_START_MONTH
 from .coordinator import RCEmRevenueCoordinator
 
 CURRENCY_PLN = "PLN"
@@ -36,6 +37,7 @@ async def async_setup_entry(
             RCEmSettlementPriceSensor(coordinator, entry),
             PVCurrentMonthRevenueSensor(coordinator, entry),
             PVPreviousMonthRevenueSensor(coordinator, entry),
+            PVCurrentYearRevenueSensor(coordinator, entry),
             PVLifetimeRevenueSensor(coordinator, entry),
         ]
     )
@@ -232,7 +234,7 @@ class PVLifetimeRevenueSensor(RCEmSensorBase):
             coordinator,
             entry,
             "export_revenue_lifetime",
-            "Export revenue lifetime",
+            f"Export revenue since {entry.data.get(CONF_START_MONTH, DEFAULT_START_MONTH)}",
         )
 
     @property
@@ -255,6 +257,51 @@ class PVLifetimeRevenueSensor(RCEmSensorBase):
                 for revenue in self.coordinator.data.monthly_revenue.values()
             ],
             "missing_months": self.coordinator.data.missing_months,
+            "uplift_enabled": self.coordinator.include_23_percent_uplift,
+        }
+
+
+class PVCurrentYearRevenueSensor(RCEmSensorBase):
+    """Current year PV export revenue."""
+
+    _attr_device_class = SensorDeviceClass.MONETARY
+    _attr_native_unit_of_measurement = CURRENCY_PLN
+    _attr_state_class = SensorStateClass.TOTAL
+
+    def __init__(self, coordinator: RCEmRevenueCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(
+            coordinator,
+            entry,
+            "export_revenue_current_year",
+            "Export revenue current year",
+        )
+
+    @property
+    def native_value(self) -> Decimal | None:
+        return self.coordinator.data.current_year_revenue_pln
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        current_year = self.coordinator.data.current_year
+        monthly_revenue = {
+            month: revenue
+            for month, revenue in self.coordinator.data.monthly_revenue.items()
+            if month.startswith(f"{current_year}-")
+        }
+        return {
+            "year": current_year,
+            "months_calculated": len(monthly_revenue),
+            "export_statistic_id": self.coordinator.export_statistic_id,
+            "total_exported_kwh": float(self.coordinator.data.current_year_exported_kwh)
+            if self.coordinator.data.current_year_exported_kwh is not None
+            else None,
+            "monthly_breakdown": [
+                _month_revenue_attributes(
+                    revenue,
+                    self.coordinator.include_23_percent_uplift,
+                )
+                for revenue in monthly_revenue.values()
+            ],
             "uplift_enabled": self.coordinator.include_23_percent_uplift,
         }
 

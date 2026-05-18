@@ -79,6 +79,32 @@ class RCEmRevenueData:
         return self.monthly_revenue.get(self.previous_month)
 
     @property
+    def current_year(self) -> str:
+        return dt_util.now().strftime("%Y")
+
+    @property
+    def current_year_revenue_pln(self) -> Decimal | None:
+        items = [
+            item
+            for month, item in self.monthly_revenue.items()
+            if month.startswith(f"{self.current_year}-")
+        ]
+        if not items:
+            return None
+        return sum((item.revenue_pln for item in items), Decimal("0"))
+
+    @property
+    def current_year_exported_kwh(self) -> Decimal | None:
+        items = [
+            item
+            for month, item in self.monthly_revenue.items()
+            if month.startswith(f"{self.current_year}-")
+        ]
+        if not items:
+            return None
+        return sum((item.exported_kwh for item in items), Decimal("0"))
+
+    @property
     def lifetime_exported_kwh(self) -> Decimal | None:
         if not self.monthly_revenue:
             return None

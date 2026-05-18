@@ -13,8 +13,6 @@ Home Assistant custom integration for estimating Polish prosumer PV export reven
 - Optionally applies the Polish 23% uplift:
   `exported_kWh * RCEm_PLN_per_MWh * 1.23 / 1000`
 
-The official PSE API endpoint `https://api.raporty.pse.pl/api/rce-pln` exposes interval RCE values in `PLN/MWh`. This integration uses the RCEm webpage for v1 because a dedicated monthly RCEm API endpoint was not found during implementation.
-
 ## Installation
 
 ### HACS Custom Repository

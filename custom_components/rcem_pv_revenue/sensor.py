@@ -160,6 +160,7 @@ class PVCurrentMonthRevenueSensor(RCEmSensorBase):
             current_month = self.coordinator.data.current_month
             return {
                 "month": current_month,
+                "export_statistic_id": self.coordinator.export_statistic_id,
                 "price_available": current_month in self.coordinator.data.prices,
                 "export_statistics_available": current_month
                 not in self.coordinator.data.missing_months,
@@ -201,6 +202,7 @@ class PVLifetimeRevenueSensor(RCEmSensorBase):
     def extra_state_attributes(self) -> dict[str, Any]:
         return {
             "months_calculated": len(self.coordinator.data.monthly_revenue),
+            "export_statistic_id": self.coordinator.export_statistic_id,
             "missing_months": self.coordinator.data.missing_months,
             "uplift_enabled": self.coordinator.include_23_percent_uplift,
         }

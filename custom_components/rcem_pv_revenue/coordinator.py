@@ -18,6 +18,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import (
     CONF_EXPORT_ENTITY_ID,
+    CONF_EXPORT_STATISTIC_ID,
     CONF_INCLUDE_23_PERCENT_UPLIFT,
     CONF_START_MONTH,
     DEFAULT_INCLUDE_23_PERCENT_UPLIFT,
@@ -96,9 +97,15 @@ class RCEmRevenueCoordinator(DataUpdateCoordinator[RCEmRevenueData]):
 
     @property
     def export_entity_id(self) -> str:
-        """Configured cumulative export energy entity."""
+        """Configured cumulative export energy entity, if any."""
 
-        return self.entry.data[CONF_EXPORT_ENTITY_ID]
+        return self.entry.data.get(CONF_EXPORT_ENTITY_ID, "")
+
+    @property
+    def export_statistic_id(self) -> str:
+        """Configured recorder statistic id."""
+
+        return self.entry.data.get(CONF_EXPORT_STATISTIC_ID) or self.export_entity_id
 
     @property
     def include_23_percent_uplift(self) -> bool:
@@ -167,14 +174,19 @@ class RCEmRevenueCoordinator(DataUpdateCoordinator[RCEmRevenueData]):
                 self.hass,
                 start,
                 end,
-                statistic_ids={self.export_entity_id},
+                statistic_ids={self.export_statistic_id},
                 period="month",
                 units={"energy": "kWh"},
                 types={"change", "state", "sum"},
             )
 
         stats = await get_instance(self.hass).async_add_executor_job(_read_stats)
-        rows = stats.get(self.export_entity_id) or []
+        rows = stats.get(self.export_statistic_id) or []
+        _LOGGER.debug(
+            "Loaded %s recorder statistic rows for %s",
+            len(rows),
+            self.export_statistic_id,
+        )
         return monthly_export_from_statistics(rows)
 
 

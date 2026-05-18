@@ -7,13 +7,15 @@
         "data": {
           "name": "Nazwa",
           "export_entity_id": "Licznik narastajacy energii oddanej",
+          "export_statistic_id": "Identyfikator statystyki energii oddanej",
           "start_month": "Miesiac poczatkowy",
           "include_23_percent_uplift": "Dodaj 23% doplaty rozliczeniowej"
         }
       }
     },
     "error": {
-      "invalid_month": "Uzyj formatu RRRR-MM, na przyklad 2024-01."
+      "invalid_month": "Uzyj formatu RRRR-MM, na przyklad 2024-01.",
+      "missing_export_source": "Wybierz licznik energii oddanej albo wpisz identyfikator statystyki."
     },
     "abort": {
       "already_configured": "Integracja Przychod PV RCEm jest juz skonfigurowana."

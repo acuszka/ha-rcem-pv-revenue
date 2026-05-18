@@ -12,6 +12,7 @@ from homeassistant.helpers import selector
 
 from .const import (
     CONF_EXPORT_ENTITY_ID,
+    CONF_EXPORT_STATISTIC_ID,
     CONF_INCLUDE_23_PERCENT_UPLIFT,
     CONF_START_MONTH,
     DEFAULT_INCLUDE_23_PERCENT_UPLIFT,
@@ -39,6 +40,10 @@ class RCEmRevenueConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             start_month = user_input[CONF_START_MONTH]
             if not _valid_month(start_month):
                 errors[CONF_START_MONTH] = "invalid_month"
+            elif not user_input.get(CONF_EXPORT_ENTITY_ID) and not user_input.get(
+                CONF_EXPORT_STATISTIC_ID
+            ):
+                errors["base"] = "missing_export_source"
             else:
                 return self.async_create_entry(
                     title=user_input.get(CONF_NAME) or "RCEm PV Revenue",
@@ -48,9 +53,10 @@ class RCEmRevenueConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         schema = vol.Schema(
             {
                 vol.Optional(CONF_NAME, default="RCEm PV Revenue"): str,
-                vol.Required(CONF_EXPORT_ENTITY_ID): selector.EntitySelector(
+                vol.Optional(CONF_EXPORT_ENTITY_ID): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain="sensor"),
                 ),
+                vol.Optional(CONF_EXPORT_STATISTIC_ID): str,
                 vol.Optional(CONF_START_MONTH, default=DEFAULT_START_MONTH): str,
                 vol.Optional(
                     CONF_INCLUDE_23_PERCENT_UPLIFT,

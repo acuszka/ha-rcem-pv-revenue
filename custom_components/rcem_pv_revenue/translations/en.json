@@ -7,13 +7,15 @@
         "data": {
           "name": "Name",
           "export_entity_id": "Cumulative exported energy sensor",
+          "export_statistic_id": "Exported energy statistic ID",
           "start_month": "Start month",
           "include_23_percent_uplift": "Add 23% settlement uplift"
         }
       }
     },
     "error": {
-      "invalid_month": "Use YYYY-MM format, for example 2024-01."
+      "invalid_month": "Use YYYY-MM format, for example 2024-01.",
+      "missing_export_source": "Select an exported energy sensor or enter a statistic ID."
     },
     "abort": {
       "already_configured": "RCEm PV Revenue is already configured."

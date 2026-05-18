@@ -5,6 +5,7 @@ from __future__ import annotations
 DOMAIN = "rcem_pv_revenue"
 
 CONF_EXPORT_ENTITY_ID = "export_entity_id"
+CONF_EXPORT_STATISTIC_ID = "export_statistic_id"
 CONF_START_MONTH = "start_month"
 CONF_INCLUDE_23_PERCENT_UPLIFT = "include_23_percent_uplift"
 

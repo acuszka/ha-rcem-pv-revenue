@@ -29,7 +29,17 @@ Copy `custom_components/rcem_pv_revenue` into your Home Assistant `custom_compon
 
 ## Required Input Sensor
 
-Choose a cumulative exported-to-grid energy sensor in `kWh`. It should have long-term statistics enabled, normally:
+Choose a cumulative exported-to-grid energy sensor in `kWh`, or enter the recorder statistic ID used by the Energy dashboard. Some integrations expose Energy dashboard sources only as statistic IDs, not as entities in Developer Tools -> States.
+
+For example, if Energy dashboard uses:
+
+```text
+tauron_importer:<your_customer_id>_balanced_generation
+```
+
+enter that value as **Exported energy statistic ID**.
+
+If you choose an entity, it should have long-term statistics enabled, normally:
 
 - `device_class: energy`
 - `state_class: total_increasing` or `total`

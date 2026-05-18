@@ -74,4 +74,50 @@ A simple built-in option is a Markdown card:
 {% endfor %}
 ```
 
-For charts, use a dashboard card that can read attributes, such as ApexCharts Card, and point it at the same `monthly_breakdown` attribute.
+For charts, install [ApexCharts Card](https://github.com/RomRider/apexcharts-card) and add a manual card like this:
+
+```yaml
+type: custom:apexcharts-card
+header:
+  show: true
+  title: PV Export Revenue By Month
+  show_states: true
+graph_span: 12month
+span:
+  start: year
+apex_config:
+  chart:
+    type: bar
+  xaxis:
+    type: category
+  yaxis:
+    decimalsInFloat: 2
+series:
+  - entity: sensor.pv_export_revenue_current_year
+    name: Revenue
+    unit: PLN
+    type: column
+    data_generator: |
+      const breakdown = entity.attributes.monthly_breakdown || [];
+      return breakdown.map((row) => {
+        return [row.month, Number(row.revenue_pln || 0)];
+      });
+  - entity: sensor.pv_export_revenue_current_year
+    name: Export
+    unit: kWh
+    type: line
+    yaxis_id: export
+    data_generator: |
+      const breakdown = entity.attributes.monthly_breakdown || [];
+      return breakdown.map((row) => {
+        return [row.month, Number(row.exported_kwh || 0)];
+      });
+yaxis:
+  - id: main
+    min: 0
+    decimals: 2
+  - id: export
+    opposite: true
+    min: 0
+    decimals: 0
+```
